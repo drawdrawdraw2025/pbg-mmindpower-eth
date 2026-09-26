@@ -45,7 +45,7 @@ jobs:
             "updated": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
             "bucket": "pbg-mmindpower-eth",
             "gateway": "https://ipfs.filebase.io/ipfs/${{ steps.ipfs.outputs.cid }}",
-            "source_repo": "drawdrawdraw2025/pbg-mmindpwer-free",
+            "source_repo": "drawdrawdraw2025/pbg-mmindpower-eth",
             "commit": "${{ github.sha }}"
           }
           EOF
