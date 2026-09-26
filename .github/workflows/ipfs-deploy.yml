@@ -12,6 +12,7 @@ jobs:
       
       - name: Upload to Filebase IPFS
         uses: aquiladev/ipfs-action@v0.3.1
+        id: ipfs
         with:
           path: ./
           service: filebase
@@ -21,4 +22,32 @@ jobs:
           pin: true
 
       - name: Show IPFS Link
-        run: echo "Deployed to IPFS!"
+        run: |
+          echo "Deployed to IPFS!"
+          echo "CID: ${{ steps.ipfs.outputs.cid }}"
+          echo "Gateway: https://ipfs.filebase.io/ipfs/${{ steps.ipfs.outputs.cid }}"
+
+      - name: Update Permanent Gateway
+        if: success()
+        run: |
+          echo "Updating permanent QR gateway with new CID: ${{ steps.ipfs.outputs.cid }}"
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/drawdrawdraw2025/pbg-permanent.git /tmp/pbg-permanent
+          cd /tmp/pbg-permanent
+          cat > latest.json << EOF
+          {
+            "cid": "${{ steps.ipfs.outputs.cid }}",
+            "updated": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "bucket": "pbg-mmindpower-eth",
+            "gateway": "https://ipfs.filebase.io/ipfs/${{ steps.ipfs.outputs.cid }}",
+            "source_repo": "drawdrawdraw2025/pbg-mmindpwer-free",
+            "commit": "${{ github.sha }}"
+          }
+          EOF
+          cat latest.json
+          git config user.email "github-actions@github.com"
+          git config user.name "github-actions"
+          git add latest.json
+          git commit -m "Update to CID ${{ steps.ipfs.outputs.cid }} from ${{ github.sha }}" || echo "No changes"
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
