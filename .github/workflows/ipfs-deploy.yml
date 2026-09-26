@@ -15,7 +15,7 @@ jobs:
         with:
           path: ./
           service: filebase
-          filebaseBucket: pbg-mmindpwer-free
+          filebaseBucket: pbg-mmindpower-eth
           filebaseKey: ${{ secrets.FILEBASE_KEY }}
           filebaseSecret: ${{ secrets.FILEBASE_SECRET }}
           pin: true
