@@ -13,6 +13,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
+      - name: Debug GH_PAT
+        run: |
+          if [ -z "${{ secrets.GH_PAT }}" ]; then echo "GH_PAT is EMPTY - secret not set!"; else echo "GH_PAT is SET, length check"; echo "${{ secrets.GH_PAT }}" | wc -c; fi
+          if [ -z "${{ secrets.FILEBASE_KEY }}" ]; then echo "FILEBASE_KEY empty"; else echo "FILEBASE_KEY set"; fi
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+
       - name: Upload to Filebase IPFS
         uses: aquiladev/ipfs-action@v0.3.1
         id: ipfs
@@ -34,8 +41,9 @@ jobs:
         if: success()
         run: |
           echo "Updating permanent QR gateway with new CID: ${{ steps.ipfs.outputs.cid }}"
-          # Clone with PAT (no x-access-token prefix) and push explicitly with PAT to bypass GITHUB_TOKEN helper
-          git clone https://${{ secrets.GH_PAT }}@github.com/drawdrawdraw2025/pbg-permanent.git /tmp/pbg-permanent
+          # Use GH_PAT via env to avoid masking issues, and push via API
+          echo "GH_PAT length via env: ${#GH_PAT}"
+          git clone https://oauth2:${GH_PAT}@github.com/drawdrawdraw2025/pbg-permanent.git /tmp/pbg-permanent 2>&1 | head -n 5
           cd /tmp/pbg-permanent
           cat > latest.json << EOF
           {
@@ -52,5 +60,7 @@ jobs:
           git config user.name "github-actions"
           git add latest.json
           git commit -m "Update to CID ${{ steps.ipfs.outputs.cid }} from ${{ github.sha }}" || echo "No changes"
-          # Push using explicit PAT URL to ensure correct token is used
-          git push https://${{ secrets.GH_PAT }}@github.com/drawdrawdraw2025/pbg-permanent.git main
+          git push https://oauth2:${GH_PAT}@github.com/drawdrawdraw2025/pbg-permanent.git main 2>&1 | head -n 20
+          echo "push exit code $?"
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
