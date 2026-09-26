@@ -1,0 +1,24 @@
+name: Deploy to Filebase IPFS
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Upload to Filebase IPFS
+        uses: aquiladev/ipfs-action@v0.3.2
+        with:
+          path: ./
+          service: filebase
+          filebaseBucket: pbg-mmindpwer-free
+          filebaseKey: ${{ secrets.FILEBASE_KEY }}
+          filebaseSecret: ${{ secrets.FILEBASE_SECRET }}
+          pin: true
+
+      - name: Show IPFS Link
+        run: echo "Deployed to IPFS!"
