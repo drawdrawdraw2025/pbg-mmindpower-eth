@@ -34,7 +34,8 @@ jobs:
         if: success()
         run: |
           echo "Updating permanent QR gateway with new CID: ${{ steps.ipfs.outputs.cid }}"
-          git clone https://x-access-token:${{ secrets.GH_PAT }}@github.com/drawdrawdraw2025/pbg-permanent.git /tmp/pbg-permanent
+          # Clone with PAT (no x-access-token prefix) and push explicitly with PAT to bypass GITHUB_TOKEN helper
+          git clone https://${{ secrets.GH_PAT }}@github.com/drawdrawdraw2025/pbg-permanent.git /tmp/pbg-permanent
           cd /tmp/pbg-permanent
           cat > latest.json << EOF
           {
@@ -51,4 +52,5 @@ jobs:
           git config user.name "github-actions"
           git add latest.json
           git commit -m "Update to CID ${{ steps.ipfs.outputs.cid }} from ${{ github.sha }}" || echo "No changes"
-          git push origin main
+          # Push using explicit PAT URL to ensure correct token is used
+          git push https://${{ secrets.GH_PAT }}@github.com/drawdrawdraw2025/pbg-permanent.git main
