@@ -14,3 +14,4 @@ This repo auto-deploys to **Filebase IPFS** on every push to `main`.
 4. Filebase pins it to IPFS (using FILEBASE_KEY and FILEBASE_SECRET secrets)
 
 Secrets required in GitHub repo: `FILEBASE_KEY` and `FILEBASE_SECRET`
+Crust auto-pin enabled 2026-09-27T06:17:59Z
