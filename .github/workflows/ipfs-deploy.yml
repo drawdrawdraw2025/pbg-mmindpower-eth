@@ -3,6 +3,12 @@ name: Deploy to Filebase IPFS
 on:
   push:
     branches: [ main ]
+  schedule:
+    - cron: '0 * * * *'      # Every hour - health + warm (05:30 IST, 06:30 IST...)
+    - cron: '0 3 * * *'      # Every day 08:30 IST (03:00 UTC) - daily dual-pin
+    - cron: '0 3 * * 1'      # Every Monday 08:30 IST - weekly QR/ENS refresh
+    - cron: '0 */6 * * *'    # Every 6 hours - warm Crust gateway
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -36,8 +42,10 @@ jobs:
         run: |
           CID="${{ steps.ipfs.outputs.cid }}"
           echo "Warming Crust gateway for CID $CID"
-          curl -m 10 -I "https://crustwebsites.net/ipfs/$CID" || echo "Crust warming"
+          curl -m 10 -I "https://crustwebsites.net/ipfs/$CID" || echo "Crust warming (may 523 first time)"
           curl -m 10 -I "https://ipfs.crustapps.net/ipfs/$CID" || true
+          curl -m 10 -I "https://ipfs.filebase.io/ipfs/$CID" || true
+          curl -m 10 -I "https://bafybeihdw6la2uczahihdmg4hxyxliciakvzig56rojdehkywdiuqsnfuq.ipfs.inbrowser.link/" || true
 
       - name: Update Permanent Gateway
         if: success()
