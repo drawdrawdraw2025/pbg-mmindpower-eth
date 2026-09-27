@@ -25,8 +25,8 @@ jobs:
           pin: true
 
       - name: Pin to Crust Free (100+ nodes, cap-free, open-source)
-        if: secrets.CRUST_SEED != ''
-        uses: crustio/crust-action@v2.0.1
+        if: ${{ secrets.CRUST_SEED != '' }}
+        uses: crustio/crust-action@main
         with:
           seed: ${{ secrets.CRUST_SEED }}
           path: ./
