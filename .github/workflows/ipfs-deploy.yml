@@ -24,19 +24,34 @@ jobs:
           filebaseSecret: ${{ secrets.FILEBASE_SECRET }}
           pin: true
 
+      - name: Pin to Crust Free (100+ nodes, cap-free, open-source)
+        if: secrets.CRUST_SEED != ''
+        uses: crustio/crust-action@v2.0.1
+        with:
+          seed: ${{ secrets.CRUST_SEED }}
+          path: ./
+        continue-on-error: true
+
       - name: Show IPFS Link
         run: |
           echo "Deployed to IPFS!"
           echo "CID: ${{ steps.ipfs.outputs.cid }}"
           echo "Gateway: https://ipfs.filebase.io/ipfs/${{ steps.ipfs.outputs.cid }}"
+          echo "Crust: https://crustwebsites.net/ipfs/${{ steps.ipfs.outputs.cid }}"
+
+      - name: Warm Crust Gateway
+        if: success()
+        run: |
+          CID="${{ steps.ipfs.outputs.cid }}"
+          echo "Warming Crust gateway for CID $CID"
+          curl -m 10 -I "https://crustwebsites.net/ipfs/$CID" || echo "Crust warming"
+          curl -m 10 -I "https://ipfs.crustapps.net/ipfs/$CID" || true
 
       - name: Update Permanent Gateway
         if: success()
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
         run: |
-          echo "Updating permanent QR gateway with new CID: ${{ steps.ipfs.outputs.cid }}"
-          echo "GH_PAT length: ${#GH_PAT}"
           git clone https://${GH_PAT}@github.com/drawdrawdraw2025/pbg-permanent.git /tmp/pbg-permanent
           cd /tmp/pbg-permanent
           cat > latest.json << EOF
