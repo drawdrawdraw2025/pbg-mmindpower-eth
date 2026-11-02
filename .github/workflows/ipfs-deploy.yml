@@ -4,10 +4,8 @@ on:
   push:
     branches: [ main ]
   schedule:
-    - cron: '0 * * * *'      # Every hour - health + warm (05:30 IST, 06:30 IST...)
-    - cron: '0 3 * * *'      # Every day 08:30 IST (03:00 UTC) - daily dual-pin
-    - cron: '0 3 * * 1'      # Every Monday 08:30 IST - weekly QR/ENS refresh
-    - cron: '0 */6 * * *'    # Every 6 hours - warm Crust gateway
+    - cron: '0 3,15 * * *'   # 08:30 & 20:30 IST - dual daily pin+warm (was hourly+6h => ~70% of free minutes burned)
+    - cron: '0 3 * * 1'      # Monday 08:30 IST - weekly QR/ENS refresh
   workflow_dispatch:
 
 permissions:
@@ -18,7 +16,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
+      - name: 💓 GH_PAT alive check
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          C=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: token $GH_PAT" https://api.github.com/user)
+          if [ "$C" != "200" ]; then echo "::error::GH_PAT expired/invalid — renew: repo Settings → Secrets → GH_PAT"; exit 1; fi
+          echo "GH_PAT alive ✓"
+
       - name: Upload to Filebase IPFS
         uses: aquiladev/ipfs-action@v0.3.1
         id: ipfs
