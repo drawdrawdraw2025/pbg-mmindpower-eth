@@ -52,7 +52,7 @@ jobs:
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
         run: |
-          git clone https://${GH_PAT}@github.com/drawdrawdraw2025/pbg-permanent.git /tmp/pbg-permanent
+          git clone https://x-access-token:${GH_PAT}@github.com/drawdrawdraw2025/pbg-permanent.git /tmp/pbg-permanent
           cd /tmp/pbg-permanent
           cat > latest.json << EOF
           {
@@ -69,4 +69,4 @@ jobs:
           git config user.name "github-actions"
           git add latest.json
           git commit -m "Update to CID ${{ steps.ipfs.outputs.cid }} from ${{ github.sha }}" || echo "No changes"
-          git push https://${GH_PAT}@github.com/drawdrawdraw2025/pbg-permanent.git main
+          git push origin main
